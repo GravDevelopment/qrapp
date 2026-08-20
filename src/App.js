@@ -9,6 +9,7 @@ function App() {
     const codeReaderRef = useRef(null);
 
     const [cameraOpen, setCameraOpen] = useState(false);
+    const [facingMode, setFacingMode] = useState('environment'); // 'environment' = back camera, 'user' = front camera
     const [serialNumber, setSerialNumber] = useState('');
 
     // Create the barcode reader once when the component mounts
@@ -23,10 +24,24 @@ function App() {
         }
     };
 
-    const startCamera = async () => {
+    const stopStream = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => {
+                track.stop();
+            });
+            streamRef.current = null;
+        }
+    };
+
+    const startCamera = async (mode = facingMode) => {
         try {
+            // Make sure any existing stream/scanner is fully stopped before
+            // requesting a new one (needed when swapping cameras)
+            stopScanning();
+            stopStream();
+
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }, // prefer the rear camera on phones/tablets
+                video: { facingMode: mode },
             });
 
             streamRef.current = stream;
@@ -34,7 +49,7 @@ function App() {
 
             setCameraOpen(true);
 
-            console.log('Camera started');
+            console.log('Camera started:', mode);
 
             // Continuously decode frames from the live video feed
             scannerControlsRef.current = await codeReaderRef.current.decodeFromVideoElement(
@@ -60,14 +75,7 @@ function App() {
 
     const closeCamera = () => {
         stopScanning();
-
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => {
-                track.stop();
-            });
-
-            streamRef.current = null;
-        }
+        stopStream();
 
         if (videoRef.current) {
             videoRef.current.srcObject = null;
@@ -78,15 +86,23 @@ function App() {
         console.log('Camera closed');
     };
 
+    // Swap between front and back camera. If the camera feed is currently
+    // open, it restarts immediately with the new camera; otherwise it just
+    // remembers the preference for the next time "Open Camera" is pressed.
+    const swapCamera = async () => {
+        const newMode = facingMode === 'environment' ? 'user' : 'environment';
+        setFacingMode(newMode);
+
+        if (cameraOpen) {
+            await startCamera(newMode);
+        }
+    };
+
     // Automatically close the camera when leaving the page
     useEffect(() => {
         return () => {
             stopScanning();
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach((track) => {
-                    track.stop();
-                });
-            }
+            stopStream();
         };
     }, []);
 
@@ -99,74 +115,84 @@ function App() {
             <div id="Functions" className="App">
 
                 {/* Download Manual */}
-
-                id="Manual"
-                href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
-                rel="noopener noreferrer"
-                target="_blank"
+                <a
+                    id="Manual"
+                    href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
+                    rel="noopener noreferrer"
+                    target="_blank"
                 >
+                    <button type="button">
+                        Download Manual
+                    </button>
+                </a>
+
+                <br />
+
+                {/* Camera Buttons */}
+                {!cameraOpen ? (
+                    <button
+                        id="startCameraBtn"
+                        type="button"
+                        onClick={() => startCamera()}
+                    >
+                        Open Camera
+                    </button>
+                ) : (
+                    <>
+                        <button
+                            id="closeCameraBtn"
+                            type="button"
+                            onClick={closeCamera}
+                        >
+                            Close Camera
+                        </button>
+
+                        <button
+                            id="swapCameraBtn"
+                            type="button"
+                            onClick={swapCamera}
+                        >
+                            Switch to {facingMode === 'environment' ? 'Front' : 'Back'} Camera
+                        </button>
+                    </>
+                )}
+
+                <br />
+
+                {/* Camera Feed */}
+                <video
+                    ref={videoRef}
+                    id="videoFeed"
+                    autoPlay
+                    playsInline
+                    muted
+                ></video>
+
+                <br />
+
+                {/* Serial Number */}
+                <label htmlFor="SerialNumber">
+                    Please Provide the Serial Number:
+                </label>
+
+                <br />
+
+                <input
+                    type="text"
+                    id="SerialNumber"
+                    name="SerialNumber"
+                    placeholder="Enter serial number"
+                    value={serialNumber}
+                    onChange={(e) => setSerialNumber(e.target.value)}
+                />
+
+                <br />
+
                 <button type="button">
-                    Download Manual
+                    Search
                 </button>
-            </a>
 
-            <br />
-
-            {/* Camera Buttons */}
-            {!cameraOpen ? (
-                <button
-                    id="startCameraBtn"
-                    type="button"
-                    onClick={startCamera}
-                >
-                    Open Camera
-                </button>
-            ) : (
-                <button
-                    id="closeCameraBtn"
-                    type="button"
-                    onClick={closeCamera}
-                >
-                    Close Camera
-                </button>
-            )}
-
-            <br />
-
-            {/* Camera Feed */}
-            <video
-                ref={videoRef}
-                id="videoFeed"
-                autoPlay
-                playsInline
-                muted
-            ></video>
-
-            <br />
-
-            {/* Serial Number */}
-            <label htmlFor="SerialNumber">
-                Please Provide the Serial Number:
-            </label>
-
-            <br />
-
-            <input
-                type="text"
-                id="SerialNumber"
-                name="SerialNumber"
-                placeholder="Enter serial number"
-                value={serialNumber}
-                onChange={(e) => setSerialNumber(e.target.value)}
-            />
-
-            <br />
-
-            <button type="button">
-                Search
-            </button>
-
-        </div >
+            </div>
         </>
     );
 }
