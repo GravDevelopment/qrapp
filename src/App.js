@@ -9,8 +9,10 @@ function App() {
     const codeReaderRef = useRef(null);
 
     const [cameraOpen, setCameraOpen] = useState(false);
+    const [facingMode, setFacingMode] = useState('environment'); // 'environment' = back camera, 'user' = front camera
     const [serialNumber, setSerialNumber] = useState('');
 
+    // Create the barcode reader once when the component mounts
     useEffect(() => {
         codeReaderRef.current = new BrowserMultiFormatReader();
     }, []);
@@ -22,62 +24,34 @@ function App() {
         }
     };
 
-    // Try to find the back/rear camera's exact device ID.
-    // Falls back to null if nothing obviously "back"-labeled is found.
-    const findBackCameraId = async () => {
-        try {
-            const devices = await navigator.mediaDevices.enumerateDevices();
-            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
-
-            // Phone browsers usually label the rear camera with
-            // "back", "rear", or "environment" somewhere in the label.
-            const backCamera = videoDevices.find((d) =>
-                /back|rear|environment/i.test(d.label)
-            );
-
-            return backCamera ? backCamera.deviceId : null;
-        } catch (error) {
-            console.error('Could not enumerate devices:', error);
-            return null;
+    const stopStream = () => {
+        if (streamRef.current) {
+            streamRef.current.getTracks().forEach((track) => {
+                track.stop();
+            });
+            streamRef.current = null;
         }
     };
 
-    const startCamera = async () => {
+    const startCamera = async (mode = facingMode) => {
         try {
-            let stream;
+            // Make sure any existing stream/scanner is fully stopped before
+            // requesting a new one (needed when swapping cameras)
+            stopScanning();
+            stopStream();
 
-            // Attempt 1: ask directly for the environment-facing camera.
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({
-                    video: { facingMode: { exact: 'environment' } },
-                });
-            } catch (exactError) {
-                console.warn('Exact "environment" camera not available, trying fallback...', exactError);
-
-                // Attempt 2: enumerate devices and pick one labeled as back/rear.
-                // (Device labels are only populated after the first permission
-                // grant, so this fallback works best on a second attempt.)
-                const backCameraId = await findBackCameraId();
-
-                if (backCameraId) {
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { deviceId: { exact: backCameraId } },
-                    });
-                } else {
-                    // Attempt 3: just ask for "environment" as a preference,
-                    // not a hard requirement, and let the browser decide.
-                    stream = await navigator.mediaDevices.getUserMedia({
-                        video: { facingMode: 'environment' },
-                    });
-                }
-            }
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { facingMode: mode },
+            });
 
             streamRef.current = stream;
             videoRef.current.srcObject = stream;
 
             setCameraOpen(true);
-            console.log('Camera started');
 
+            console.log('Camera started:', mode);
+
+            // Continuously decode frames from the live video feed
             scannerControlsRef.current = await codeReaderRef.current.decodeFromVideoElement(
                 videoRef.current,
                 (result, error) => {
@@ -85,9 +59,12 @@ function App() {
                         setSerialNumber(result.getText());
                         console.log('Scanned:', result.getText());
 
+                        // Got a hit — stop scanning and close the camera automatically
                         stopScanning();
                         closeCamera();
                     }
+                    // A "not found" error fires continuously while no code is in
+                    // frame — that's normal, so it's ignored here rather than logged.
                 }
             );
         } catch (error) {
@@ -98,30 +75,34 @@ function App() {
 
     const closeCamera = () => {
         stopScanning();
-
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => {
-                track.stop();
-            });
-            streamRef.current = null;
-        }
+        stopStream();
 
         if (videoRef.current) {
             videoRef.current.srcObject = null;
         }
 
         setCameraOpen(false);
+
         console.log('Camera closed');
     };
 
+    // Swap between front and back camera. If the camera feed is currently
+    // open, it restarts immediately with the new camera; otherwise it just
+    // remembers the preference for the next time "Open Camera" is pressed.
+    const swapCamera = async () => {
+        const newMode = facingMode === 'environment' ? 'user' : 'environment';
+        setFacingMode(newMode);
+
+        if (cameraOpen) {
+            await startCamera(newMode);
+        }
+    };
+
+    // Automatically close the camera when leaving the page
     useEffect(() => {
         return () => {
             stopScanning();
-            if (streamRef.current) {
-                streamRef.current.getTracks().forEach((track) => {
-                    track.stop();
-                });
-            }
+            stopStream();
         };
     }, []);
 
@@ -133,71 +114,85 @@ function App() {
 
             <div id="Functions" className="App">
 
-
-                id="Manual"
-                href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
-                rel="noopener noreferrer"
-                target="_blank"
+                {/* Download Manual */}
+                <a
+                    id="Manual"
+                    href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
+                    rel="noopener noreferrer"
+                    target="_blank"
                 >
+                    <button type="button">
+                        Download Manual
+                    </button>
+                </a>
+
+                <br />
+
+                {/* Camera Buttons */}
+                {!cameraOpen ? (
+                    <button
+                        id="startCameraBtn"
+                        type="button"
+                        onClick={() => startCamera()}
+                    >
+                        Open Camera
+                    </button>
+                ) : (
+                    <>
+                        <button
+                            id="closeCameraBtn"
+                            type="button"
+                            onClick={closeCamera}
+                        >
+                            Close Camera
+                        </button>
+
+                        <button
+                            id="swapCameraBtn"
+                            type="button"
+                            onClick={swapCamera}
+                        >
+                            Switch to {facingMode === 'environment' ? 'Front' : 'Back'} Camera
+                        </button>
+                    </>
+                )}
+
+                <br />
+
+                {/* Camera Feed */}
+                <video
+                    ref={videoRef}
+                    id="videoFeed"
+                    autoPlay
+                    playsInline
+                    muted
+                ></video>
+
+                <br />
+
+                {/* Serial Number */}
+                <label htmlFor="SerialNumber">
+                    Please Provide the Serial Number:
+                </label>
+
+                <br />
+
+                <input
+                    type="text"
+                    id="SerialNumber"
+                    name="SerialNumber"
+                    placeholder="Enter serial number"
+                    value={serialNumber}
+                    onChange={(e) => setSerialNumber(e.target.value)}
+                />
+
+                <br />
+
                 <button type="button">
-                    Download Manual
+                    Search
                 </button>
-            </a>
 
-            <br />
-
-            {!cameraOpen ? (
-                <button
-                    id="startCameraBtn"
-                    type="button"
-                    onClick={startCamera}
-                >
-                    Open Camera
-                </button>
-            ) : (
-                <button
-                    id="closeCameraBtn"
-                    type="button"
-                    onClick={closeCamera}
-                >
-                    Close Camera
-                </button>
-            )}
-
-            <br />
-
-            <video
-                ref={videoRef}
-                id="videoFeed"
-                autoPlay
-                playsInline
-                muted
-            ></video>
-
-            <br />
-
-            <label htmlFor="SerialNumber">
-                Please Provide the Serial Number:
-            </label>
-
-            <br />
-
-            <input
-                type="text"
-                id="SerialNumber"
-                name="SerialNumber"
-                placeholder="Enter serial number"
-                value={serialNumber}
-                onChange={(e) => setSerialNumber(e.target.value)}
-            />
-
-            <br />
-
-            <button type="button">
-                Search
-            </button>
-
-        </div >
+            </div>
         </>
     );
 }
