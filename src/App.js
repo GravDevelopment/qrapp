@@ -11,7 +11,6 @@ function App() {
     const [cameraOpen, setCameraOpen] = useState(false);
     const [serialNumber, setSerialNumber] = useState('');
 
-    // Create the barcode reader once when the component mounts
     useEffect(() => {
         codeReaderRef.current = new BrowserMultiFormatReader();
     }, []);
@@ -23,20 +22,62 @@ function App() {
         }
     };
 
+    // Try to find the back/rear camera's exact device ID.
+    // Falls back to null if nothing obviously "back"-labeled is found.
+    const findBackCameraId = async () => {
+        try {
+            const devices = await navigator.mediaDevices.enumerateDevices();
+            const videoDevices = devices.filter((d) => d.kind === 'videoinput');
+
+            // Phone browsers usually label the rear camera with
+            // "back", "rear", or "environment" somewhere in the label.
+            const backCamera = videoDevices.find((d) =>
+                /back|rear|environment/i.test(d.label)
+            );
+
+            return backCamera ? backCamera.deviceId : null;
+        } catch (error) {
+            console.error('Could not enumerate devices:', error);
+            return null;
+        }
+    };
+
     const startCamera = async () => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: 'environment' }, // prefer the rear camera on phones/tablets
-            });
+            let stream;
+
+            // Attempt 1: ask directly for the environment-facing camera.
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    video: { facingMode: { exact: 'environment' } },
+                });
+            } catch (exactError) {
+                console.warn('Exact "environment" camera not available, trying fallback...', exactError);
+
+                // Attempt 2: enumerate devices and pick one labeled as back/rear.
+                // (Device labels are only populated after the first permission
+                // grant, so this fallback works best on a second attempt.)
+                const backCameraId = await findBackCameraId();
+
+                if (backCameraId) {
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { deviceId: { exact: backCameraId } },
+                    });
+                } else {
+                    // Attempt 3: just ask for "environment" as a preference,
+                    // not a hard requirement, and let the browser decide.
+                    stream = await navigator.mediaDevices.getUserMedia({
+                        video: { facingMode: 'environment' },
+                    });
+                }
+            }
 
             streamRef.current = stream;
             videoRef.current.srcObject = stream;
 
             setCameraOpen(true);
-
             console.log('Camera started');
 
-            // Continuously decode frames from the live video feed
             scannerControlsRef.current = await codeReaderRef.current.decodeFromVideoElement(
                 videoRef.current,
                 (result, error) => {
@@ -44,12 +85,9 @@ function App() {
                         setSerialNumber(result.getText());
                         console.log('Scanned:', result.getText());
 
-                        // Got a hit — stop scanning and close the camera automatically
                         stopScanning();
                         closeCamera();
                     }
-                    // A "not found" error fires continuously while no code is in
-                    // frame — that's normal, so it's ignored here rather than logged.
                 }
             );
         } catch (error) {
@@ -65,7 +103,6 @@ function App() {
             streamRef.current.getTracks().forEach((track) => {
                 track.stop();
             });
-
             streamRef.current = null;
         }
 
@@ -74,11 +111,9 @@ function App() {
         }
 
         setCameraOpen(false);
-
         console.log('Camera closed');
     };
 
-    // Automatically close the camera when leaving the page
     useEffect(() => {
         return () => {
             stopScanning();
@@ -98,7 +133,6 @@ function App() {
 
             <div id="Functions" className="App">
 
-                {/* Download Manual */}
 
                 id="Manual"
                 href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
@@ -112,7 +146,6 @@ function App() {
 
             <br />
 
-            {/* Camera Buttons */}
             {!cameraOpen ? (
                 <button
                     id="startCameraBtn"
@@ -133,7 +166,6 @@ function App() {
 
             <br />
 
-            {/* Camera Feed */}
             <video
                 ref={videoRef}
                 id="videoFeed"
@@ -144,7 +176,6 @@ function App() {
 
             <br />
 
-            {/* Serial Number */}
             <label htmlFor="SerialNumber">
                 Please Provide the Serial Number:
             </label>
