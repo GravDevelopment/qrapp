@@ -127,6 +127,11 @@ function App() {
                 </a>
 
                 <br />
+                <a href="GG GVS USER MANUAL REV3 copy.pdf" download="GG GVS USER MANUAL REV3.pdf">
+                    <button>Download User Manual</button>
+                </a>
+
+                <be />
 
                 {/* Camera Buttons */}
                 {!cameraOpen ? (
