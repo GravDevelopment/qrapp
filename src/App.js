@@ -1,6 +1,7 @@
 import './App.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
+import userManualPdf from './GG GVS USER MANUAL REV3 copy.pdf';
 
 function App() {
     const videoRef = useRef(null);
@@ -127,11 +128,11 @@ function App() {
                 </a>
 
                 <br />
-                <a href="GG GVS USER MANUAL REV3 copy.pdf" download="GG GVS USER MANUAL REV3.pdf">
+                <a href={userManualPdf} download="GG GVS USER MANUAL REV3.pdf">
                     <button>Download User Manual</button>
                 </a>
 
-                <be />
+                <br />
 
                 {/* Camera Buttons */}
                 {!cameraOpen ? (
