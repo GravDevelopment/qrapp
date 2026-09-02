@@ -14,7 +14,11 @@ function App() {
     const [serialNumber, setSerialNumber] = useState('');
 
     const handleSearch = () => {
-        alert(`Searching for: ${serialNumber}`);
+        window.open(
+            `https://saleshubbookingshub.blob.core.windows.net/gvs/${serialNumber}.pdf`,
+            '_blank',
+            'noopener,noreferrer'
+        );
     };
 
     const handleDownloadManual = () => {
