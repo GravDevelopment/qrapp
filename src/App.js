@@ -13,6 +13,20 @@ function App() {
     const [facingMode, setFacingMode] = useState('environment'); // 'environment' = back camera, 'user' = front camera
     const [serialNumber, setSerialNumber] = useState('');
 
+    const handleSearch = () => {
+        alert(`Searching for: ${serialNumber}`);
+    };
+
+    const handleDownloadManual = () => {
+        // Trigger the download without nesting a <button> inside an <a>
+        const link = document.createElement('a');
+        link.href = userManualPdf;
+        link.download = 'GG GVS USER MANUAL REV3.pdf';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Create the barcode reader once when the component mounts
     useEffect(() => {
         codeReaderRef.current = new BrowserMultiFormatReader();
@@ -110,27 +124,15 @@ function App() {
     return (
         <>
             <div>
-                <img src="logo192.png" alt="Funny" />
+                <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Funny" />
             </div>
 
             <div id="Functions" className="App">
 
                 {/* Download Manual */}
-                <a
-                    id="Manual"
-                    href="https://www.youtube.com/watch?v=Aq5WXmQQooo"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <button type="button">
-                        Download Manual
-                    </button>
-                </a>
-
-                <br />
-                <a href={userManualPdf} download="GG GVS USER MANUAL REV3.pdf">
-                    <button>Download User Manual</button>
-                </a>
+                <button type="button" id="downloadManualBtn" onClick={handleDownloadManual}>
+                    Download User Manual
+                </button>
 
                 <br />
 
@@ -194,7 +196,7 @@ function App() {
 
                 <br />
 
-                <button type="button">
+                <button type="button" id="Search" onClick={handleSearch}>
                     Search
                 </button>
 
