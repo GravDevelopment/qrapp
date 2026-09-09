@@ -131,6 +131,10 @@ function App() {
 
     return (
         <>
+            <div>
+                <img src="GravLogo.png" alt="Company Logo" id="Image"/>
+            </div>
+
             <div id="Functions" className="App">
 
                 {/* Download Manual */}

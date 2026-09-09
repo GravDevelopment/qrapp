@@ -100,11 +100,18 @@
 
 #videoFeed{
     display: none;
-    max-width: 33.33vw;
+    max-width: 100vw;
 }
 
 #Functions {
     margin-top:11vw;
     display: grid;
     justify-content: center;
+}
+
+#Image{
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 50%;
 }
