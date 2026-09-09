@@ -1,0 +1,109 @@
+#downloadManualBtn {
+    border: solid;
+    border-width: 2pt;
+    border-radius: 50pt;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+    padding-left: 15pt;
+    padding-right: 15pt;
+    font-family: Poppins;
+    color: #313236;
+}
+
+    #downloadManualBtn:hover {
+        border: none;
+        border-width: 0pt;
+        background-color: #D1232A;
+        color:white;
+    }
+
+#startCameraBtn {
+    border: solid;
+    border-width: 2pt;
+    border-radius: 50pt;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+    padding-left: 15pt;
+    padding-right: 15pt;
+    font-family: Poppins;
+    color: #313236;
+}
+    #startCameraBtn:hover {
+        border: none;
+        border-width: 0pt;
+        background-color: #D1232A;
+        color: white;
+    }
+
+#closeCameraBtn {
+    border: solid;
+    border-width: 2pt;
+    border-radius: 50pt;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+    padding-left: 15pt;
+    padding-right: 15pt;
+    font-family: Poppins;
+    color: #313236;
+}
+    #closeCameraBtn:hover {
+        border: none;
+        border-width: 0pt;
+        background-color: #D1232A;
+        color: white;
+    }
+#swapCameraBtn {
+    border: solid;
+    border-width: 2pt;
+    border-radius: 50pt;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+    padding-left: 15pt;
+    padding-right: 15pt;
+    font-family: Poppins;
+    color: #313236;
+}
+    #swapCameraBtn:hover {
+        border: none;
+        border-width: 0pt;
+        background-color: #D1232A;
+        color: white;
+    }
+
+#Search {
+    border: solid;
+    border-width: 2pt;
+    border-radius: 50pt;
+    padding-top: 12pt;
+    padding-bottom: 12pt;
+    padding-left: 15pt;
+    padding-right: 15pt;
+    font-family: Poppins;
+    color: #313236;
+}
+    #Search:hover {
+        border: none;
+        border-width: 0pt;
+        background-color: #D1232A;
+        color: white;
+    }
+
+#SerialNumberFont {
+    font-family: Alata;
+    text-transform: uppercase;
+}
+
+#SerialNumber {
+    font-family: Alata;
+    text-transform: uppercase;
+}
+
+#videoFeed{
+    display: none;
+}
+
+#Functions {
+    margin-top:11vw;
+    display: grid;
+    justify-content: center;
+}

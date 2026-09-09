@@ -2,6 +2,7 @@ import './App.css';
 import React, { useEffect, useRef, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import userManualPdf from './GG GVS USER MANUAL REV3 copy.pdf';
+import './App.css'; 
 
 function App() {
     const videoRef = useRef(null);
@@ -58,7 +59,8 @@ function App() {
             // requesting a new one (needed when swapping cameras)
             stopScanning();
             stopStream();
-
+            var x = document.getElementById('videoFeed');
+            x.style.display = 'flex';
             const stream = await navigator.mediaDevices.getUserMedia({
                 video: { facingMode: mode },
             });
@@ -103,6 +105,8 @@ function App() {
         setCameraOpen(false);
 
         console.log('Camera closed');
+        var x = document.getElementById('videoFeed');
+        x.style.display = 'none';
     };
 
     // Swap between front and back camera. If the camera feed is currently
@@ -127,10 +131,6 @@ function App() {
 
     return (
         <>
-            <div>
-                <img src={process.env.PUBLIC_URL + '/logo192.png'} alt="Funny" />
-            </div>
-
             <div id="Functions" className="App">
 
                 {/* Download Manual */}
@@ -183,7 +183,7 @@ function App() {
                 <br />
 
                 {/* Serial Number */}
-                <label htmlFor="SerialNumber">
+                <label htmlFor="SerialNumber" id="SerialNumberFont">
                     Please Provide the Serial Number:
                 </label>
 
