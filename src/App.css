@@ -1,117 +1,129 @@
-#downloadManualBtn {
-    border: solid;
-    border-width: 2pt;
-    border-radius: 50pt;
-    padding-top: 12pt;
-    padding-bottom: 12pt;
-    padding-left: 15pt;
-    padding-right: 15pt;
-    font-family: Poppins;
-    color: #313236;
+:root {
+    --gravity-red: #D1232A;
+    --ink: #313236;
 }
 
-    #downloadManualBtn:hover {
-        border: none;
-        border-width: 0pt;
-        background-color: #D1232A;
-        color:white;
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Poppins, system-ui, sans-serif;
+}
+
+    /* Background: fixed layer behind everything */
+    body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        z-index: -1;
+        background: linear-gradient(rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0.25)), url('./GVS Landing.jpg') center top / cover no-repeat;
     }
 
-#startCameraBtn {
-    border: solid;
-    border-width: 2pt;
-    border-radius: 50pt;
-    padding-top: 12pt;
-    padding-bottom: 12pt;
-    padding-left: 15pt;
-    padding-right: 15pt;
-    font-family: Poppins;
-    color: #313236;
+/* Page layout */
+.page {
+    min-height: 100vh;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+    padding: 5vh 16px;
 }
-    #startCameraBtn:hover {
-        border: none;
-        border-width: 0pt;
-        background-color: #D1232A;
-        color: white;
-    }
 
-#closeCameraBtn {
-    border: solid;
-    border-width: 2pt;
-    border-radius: 50pt;
-    padding-top: 12pt;
-    padding-bottom: 12pt;
-    padding-left: 15pt;
-    padding-right: 15pt;
-    font-family: Poppins;
-    color: #313236;
+#Image {
+    display: block;
+    width: min(420px, 70vw);
+    height: auto;
 }
-    #closeCameraBtn:hover {
-        border: none;
-        border-width: 0pt;
-        background-color: #D1232A;
-        color: white;
-    }
-#swapCameraBtn {
-    border: solid;
-    border-width: 2pt;
-    border-radius: 50pt;
-    padding-top: 12pt;
-    padding-bottom: 12pt;
-    padding-left: 15pt;
-    padding-right: 15pt;
-    font-family: Poppins;
-    color: #313236;
-}
-    #swapCameraBtn:hover {
-        border: none;
-        border-width: 0pt;
-        background-color: #D1232A;
-        color: white;
-    }
 
+/* Form card */
+#Functions {
+    display: grid;
+    gap: 14px;
+    width: min(440px, 100%);
+    box-sizing: border-box;
+    padding: 28px 24px;
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(6px);
+}
+
+/* Shared control style: dropdown, input, button */
+#downloadSelect,
+#SerialNumber,
 #Search {
-    border: solid;
-    border-width: 2pt;
-    border-radius: 50pt;
-    padding-top: 12pt;
-    padding-bottom: 12pt;
-    padding-left: 15pt;
-    padding-right: 15pt;
-    font-family: Poppins;
-    color: #313236;
+    width: 100%;
+    box-sizing: border-box;
+    border: 2px solid var(--ink);
+    border-radius: 999px;
+    padding: 12px 18px;
+    font-family: Poppins, sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    background-color: #fff;
 }
-    #Search:hover {
-        border: none;
-        border-width: 0pt;
-        background-color: #D1232A;
-        color: white;
+
+#downloadSelect,
+#Search {
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+
+    /* Hover changes colour only, so nothing shifts */
+    #downloadSelect:hover {
+        border-color: var(--gravity-red);
+        color: var(--gravity-red);
     }
 
+    #downloadSelect option {
+        background-color: #fff;
+        color: var(--ink);
+    }
+
+/* Primary action */
+#Search {
+    background-color: var(--gravity-red);
+    border-color: var(--gravity-red);
+    color: #fff;
+    font-weight: 600;
+}
+
+    #Search:hover:not(:disabled) {
+        background-color: #fff;
+        color: var(--gravity-red);
+    }
+
+    #Search:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+/* Label and input */
 #SerialNumberFont {
-    font-family: Alata;
+    font-family: Alata, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
     text-transform: uppercase;
+    text-align: center;
+    color: var(--ink);
 }
 
 #SerialNumber {
-    font-family: Alata;
+    font-family: Alata, sans-serif;
     text-transform: uppercase;
+    text-align: center;
 }
 
-#videoFeed{
-    display: none;
-    max-width: 100vw;
-}
+    #SerialNumber::placeholder {
+        text-transform: none;
+        font-size: 13px;
+        color: #8a8b90;
+    }
 
-#Functions {
-    margin-top:5vw;
-    display: grid;
-    justify-content: center;
-}
-
-#Image{
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-    width: 50%;
-}
+    /* Keyboard focus */
+    #downloadSelect:focus-visible,
+    #SerialNumber:focus-visible,
+    #Search:focus-visible {
+        outline: 3px solid rgba(209, 35, 42, 0.4);
+        outline-offset: 2px;
+    }

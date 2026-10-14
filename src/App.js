@@ -1,216 +1,88 @@
 import './App.css';
-import React, { useEffect, useRef, useState } from 'react';
-import { BrowserMultiFormatReader } from '@zxing/browser';
-import userManualPdf from './GG GVS USER MANUAL REV3 copy.pdf';
-import './App.css'; 
+import React, { useState } from 'react';
+import userManualPdf from './GG_GVS_USER_MANUAL_REV6 ENGLISH.pdf';
+import frenchmanual from './GG_GVS_USER_MANUAL_REV5 FR.pdf';
+import Derka from './Certificate Securope Quickset ZP_B054_25 EN_encrypted_.pdf';
+import ENStandards from './Gravity Vertical System_REV1.4.pdf';
+import logo from './New-Generic_With-Slogan 1.png';
+
+// Add or remove entries here to change the dropdown options
+const DOWNLOADS = [
+    { id: 'englishmanual', label: 'English Manual / Manuel en anglais', file: userManualPdf, filename: 'GG_GVS_USER_MANUAL_REV6 ENGLISH.pdf' },
+    { id: 'frenchmanual', label: 'French Manual / Manuel en français', file: frenchmanual, filename: 'GG_GVS_USER_MANUAL_REV5 FR.pdf' },
+    { id: 'dekra', label: 'Dekra Certificate / Certificat Dekra', file: Derka, filename: 'Certificate Securope Quickset ZP_B054_25 EN_encrypted_.pdf' },
+    { id: 'enstandards', label: 'EN Standards / Normes EN', file: ENStandards, filename: 'Gravity Vertical System_REV1.4.pdf' }
+];
 
 function App() {
-    const videoRef = useRef(null);
-    const streamRef = useRef(null);
-    const scannerControlsRef = useRef(null);
-    const codeReaderRef = useRef(null);
-
-    const [cameraOpen, setCameraOpen] = useState(false);
-    const [facingMode, setFacingMode] = useState('environment'); // 'environment' = back camera, 'user' = front camera
     const [serialNumber, setSerialNumber] = useState('');
+    const [selectedDownload, setSelectedDownload] = useState('');
 
-    const handleSearch = () => {
+    const trimmedSerial = serialNumber.trim();
+
+    const handleSearch = (e) => {
+        e.preventDefault();               // form submit (Enter key or button)
+        if (!trimmedSerial) return;
         window.open(
-            `https://saleshubbookingshub.blob.core.windows.net/gvs/${serialNumber}.pdf`,
+            `https://saleshubbookingshub.blob.core.windows.net/gvs/${encodeURIComponent(trimmedSerial)}.pdf`,
             '_blank',
             'noopener,noreferrer'
         );
     };
 
-    const handleDownloadManual = () => {
-        // Trigger the download without nesting a <button> inside an <a>
+    const handleDownloadChange = (e) => {
+        const item = DOWNLOADS.find((d) => d.id === e.target.value);
+        if (!item) return;
+
         const link = document.createElement('a');
-        link.href = userManualPdf;
-        link.download = 'GG GVS USER MANUAL REV3.pdf';
+        link.href = item.file;
+        link.download = item.filename;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+
+        // Reset to the placeholder so the same option can be chosen again
+        setSelectedDownload('');
     };
-
-    // Create the barcode reader once when the component mounts
-    useEffect(() => {
-        codeReaderRef.current = new BrowserMultiFormatReader();
-    }, []);
-
-    const stopScanning = () => {
-        if (scannerControlsRef.current) {
-            scannerControlsRef.current.stop();
-            scannerControlsRef.current = null;
-        }
-    };
-
-    const stopStream = () => {
-        if (streamRef.current) {
-            streamRef.current.getTracks().forEach((track) => {
-                track.stop();
-            });
-            streamRef.current = null;
-        }
-    };
-
-    const startCamera = async (mode = facingMode) => {
-        try {
-            // Make sure any existing stream/scanner is fully stopped before
-            // requesting a new one (needed when swapping cameras)
-            stopScanning();
-            stopStream();
-            var x = document.getElementById('videoFeed');
-            x.style.display = 'flex';
-            const stream = await navigator.mediaDevices.getUserMedia({
-                video: { facingMode: mode },
-            });
-
-            streamRef.current = stream;
-            videoRef.current.srcObject = stream;
-
-            setCameraOpen(true);
-
-            console.log('Camera started:', mode);
-
-            // Continuously decode frames from the live video feed
-            scannerControlsRef.current = await codeReaderRef.current.decodeFromVideoElement(
-                videoRef.current,
-                (result, error) => {
-                    if (result) {
-                        setSerialNumber(result.getText());
-                        console.log('Scanned:', result.getText());
-
-                        // Got a hit — stop scanning and close the camera automatically
-                        stopScanning();
-                        closeCamera();
-                    }
-                    // A "not found" error fires continuously while no code is in
-                    // frame — that's normal, so it's ignored here rather than logged.
-                }
-            );
-        } catch (error) {
-            console.error('Camera error:', error);
-            alert('Unable to access the camera.');
-        }
-    };
-
-    const closeCamera = () => {
-        stopScanning();
-        stopStream();
-
-        if (videoRef.current) {
-            videoRef.current.srcObject = null;
-        }
-
-        setCameraOpen(false);
-
-        console.log('Camera closed');
-        var x = document.getElementById('videoFeed');
-        x.style.display = 'none';
-    };
-
-    // Swap between front and back camera. If the camera feed is currently
-    // open, it restarts immediately with the new camera; otherwise it just
-    // remembers the preference for the next time "Open Camera" is pressed.
-    const swapCamera = async () => {
-        const newMode = facingMode === 'environment' ? 'user' : 'environment';
-        setFacingMode(newMode);
-
-        if (cameraOpen) {
-            await startCamera(newMode);
-        }
-    };
-
-    // Automatically close the camera when leaving the page
-    useEffect(() => {
-        return () => {
-            stopScanning();
-            stopStream();
-        };
-    }, []);
 
     return (
-        <>
-            <div>
-                <img src="GravLogo.png" alt="Company Logo" id="Image"/>
-            </div>
+        <main className="page">
+            <img src={logo} alt="Gravity Vertical System" id="Image" />
 
-            <div id="Functions" className="App">
+            <form id="Functions" className="App" onSubmit={handleSearch}>
+                <select
+                    id="downloadSelect"
+                    value={selectedDownload}
+                    onChange={handleDownloadChange}
+                    aria-label="Download documents"
+                >
+                    <option value="" disabled>Download... / Télécharger...</option>
+                    {DOWNLOADS.map((d) => (
+                        <option key={d.id} value={d.id}>{d.label}</option>
+                    ))}
+                </select>
 
-                {/* Download Manual */}
-                <button type="button" id="downloadManualBtn" onClick={handleDownloadManual}>
-                    Download User Manual
-                </button>
-
-                <br />
-
-                {/* Camera Buttons */}
-                {!cameraOpen ? (
-                    <button
-                        id="startCameraBtn"
-                        type="button"
-                        onClick={() => startCamera()}
-                    >
-                        Open Camera
-                    </button>
-                ) : (
-                    <>
-                        <button
-                            id="closeCameraBtn"
-                            type="button"
-                            onClick={closeCamera}
-                        >
-                            Close Camera
-                        </button>
-
-                        <button
-                            id="swapCameraBtn"
-                            type="button"
-                            onClick={swapCamera}
-                        >
-                            Switch to {facingMode === 'environment' ? 'Front' : 'Back'} Camera
-                        </button>
-                    </>
-                )}
-
-                <br />
-
-                {/* Camera Feed */}
-                <video
-                    ref={videoRef}
-                    id="videoFeed"
-                    autoPlay
-                    playsInline
-                    muted
-                ></video>
-
-                <br />
-
-                {/* Serial Number */}
                 <label htmlFor="SerialNumber" id="SerialNumberFont">
-                    Please Provide the Serial Number:
+                    Please provide the serial number:
+                    <br />
+                    Veuillez fournir le numéro de série :
                 </label>
-
-                <br />
 
                 <input
                     type="text"
                     id="SerialNumber"
                     name="SerialNumber"
-                    placeholder="Enter serial number"
+                    placeholder="Serial number / Numéro de série"
+                    autoComplete="off"
                     value={serialNumber}
                     onChange={(e) => setSerialNumber(e.target.value)}
                 />
 
-                <br />
-
-                <button type="button" id="Search" onClick={handleSearch}>
-                    Search
+                <button type="submit" id="Search" disabled={!trimmedSerial}>
+                    Search / Rechercher
                 </button>
-
-            </div>
-        </>
+            </form>
+        </main>
     );
 }
-
 export default App;
