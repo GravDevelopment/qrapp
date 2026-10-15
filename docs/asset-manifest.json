@@ -1,0 +1,19 @@
+{
+  "files": {
+    "main.css": "/static/css/main.2669b135.css",
+    "main.js": "/static/js/main.eb38969b.js",
+    "static/media/Certificate Securope Quickset ZP_B054_25 EN_encrypted_.pdf": "/static/media/Certificate Securope Quickset ZP_B054_25 EN_encrypted_.2d48f20b513b06887eaa.pdf",
+    "static/media/Gravity Vertical System_REV1.4.pdf": "/static/media/Gravity Vertical System_REV1.4.0d33cc7fa005857b8b4f.pdf",
+    "static/media/GG_GVS_USER_MANUAL_REV5 FR.pdf": "/static/media/GG_GVS_USER_MANUAL_REV5 FR.2246329b72cca87a73cb.pdf",
+    "static/media/GG_GVS_USER_MANUAL_REV6 ENGLISH.pdf": "/static/media/GG_GVS_USER_MANUAL_REV6 ENGLISH.b5336ed603ade4bf41d0.pdf",
+    "static/media/GVS Landing.jpg": "/static/media/GVS Landing.d9b084adb64ebf703955.jpg",
+    "static/media/New-Generic_With-Slogan 1.png": "/static/media/New-Generic_With-Slogan 1.cb56c7bb8c69e09a9901.png",
+    "index.html": "/index.html",
+    "main.2669b135.css.map": "/static/css/main.2669b135.css.map",
+    "main.eb38969b.js.map": "/static/js/main.eb38969b.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.2669b135.css",
+    "static/js/main.eb38969b.js"
+  ]
+}
